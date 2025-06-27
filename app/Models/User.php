@@ -3,9 +3,11 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\QuizAttempt;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
@@ -19,30 +21,26 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
-        'email',
-        'password',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    public function quizAttempts(): HasMany
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->hasMany(QuizAttempt::class);
+    }
+
+    public function getCompletedQuestionsCount(): int
+    {
+        return $this->quizAttempts()->count();
+    }
+
+    public function getCorrectAnswersCount(): int
+    {
+        return $this->quizAttempts()->where('is_correct', true)->count();
+    }
+
+    public function getSkippedAnswersCount(): int
+    {
+        return $this->quizAttempts()->where('is_skipped', true)->count();
     }
 }
